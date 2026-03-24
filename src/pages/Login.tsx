@@ -1,18 +1,19 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [isSignUp, setIsSignUp] = useState(searchParams.get("signup") === "true");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/");
+    navigate("/dashboard");
   };
 
   return (
