@@ -66,10 +66,8 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-            <TrendingUp className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">FinSight</h1>
+          <img src="/logo.png" alt="HisabHero Logo" className="w-12 h-12 object-contain" onError={(e) => { e.currentTarget.style.display='none' }} />
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">HisabHero</h1>
           <p className="text-muted-foreground text-sm">
             {isSignUp ? "Create your account to get started" : "Sign in to your financial dashboard"}
           </p>

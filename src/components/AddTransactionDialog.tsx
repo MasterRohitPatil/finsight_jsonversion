@@ -144,7 +144,8 @@ export function AddTransactionDialog() {
                         max={TODAY}
                         onChange={e => setDate(e.target.value)}
                         required
-                        className="w-full px-3 py-2.5 rounded-xl text-sm bg-muted/50 border border-border focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm bg-muted/50 border border-border focus:outline-none focus:ring-1 focus:ring-primary text-foreground [&::-webkit-calendar-picker-indicator]:dark:invert"
+                        style={{ colorScheme: "dark" }}
                       />
                     </div>
 

@@ -10,6 +10,7 @@ import { deleteAllData } from "@/lib/api";
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
 import { UploadHistoryPanel } from "@/components/UploadHistoryPanel";
 import { CsvMappingModal } from "@/components/CsvMappingModal";
+import { FloatingAIBot } from "@/components/FloatingAIBot";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,8 +46,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.name.endsWith(".csv")) {
-      toast({ title: "Invalid File", description: "Please upload a .csv file.", variant: "destructive" });
+    if (!file.name.toLowerCase().endsWith(".csv") && !file.name.toLowerCase().endsWith(".pdf")) {
+      toast({ title: "Invalid File", description: "Please upload a .csv or .pdf file.", variant: "destructive" });
       return;
     }
 
@@ -69,7 +70,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       if (!res.ok) throw new Error(data.error || "Upload failed");
 
       toast({
-        title: "✅ CSV Uploaded",
+        title: "✅ File Uploaded",
         description: `${data.imported} rows imported${data.skipped > 0 ? `, ${data.skipped} skipped` : ""}.`,
       });
       await queryClient.invalidateQueries();
@@ -137,15 +138,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <span className="hidden sm:inline">Export</span>
               </a>
 
-              {/* Upload CSV */}
-              <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".csv" className="hidden" />
+              {/* Upload CSV or PDF */}
+              <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".csv,.pdf" className="hidden" />
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
               >
                 <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">{uploading ? "Uploading..." : "Upload CSV"}</span>
+                <span className="hidden sm:inline">{uploading ? "Uploading..." : "Upload Statement"}</span>
               </button>
 
               {/* History */}
@@ -190,6 +191,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           onClose={() => setMappingState(null)}
         />
       )}
+      
+      {/* Global AI Chatbot */}
+      <FloatingAIBot />
     </SidebarProvider>
   );
 }

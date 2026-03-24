@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import 'dotenv/config';
+import { GoogleGenAI } from '@google/genai';
+import os from 'os';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -287,7 +290,86 @@ app.post('/api/auth/login', async (req, res) => {
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/api/upload', upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No CSV file uploaded' });
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+  // [PDF Processing via AI]
+  if (req.file.originalname.toLowerCase().endsWith('.pdf')) {
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not set in the backend environment.' });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const pdfBase64 = req.file.buffer.toString('base64');
+      const inlinePdf = {
+        inlineData: {
+          data: pdfBase64,
+          mimeType: 'application/pdf'
+        }
+      };
+
+      const prompt = `
+You are a precise financial data extraction assistant.
+You have been provided with a bank statement PDF. Note that the first few pages may be cover letters, relationship summaries, or irrelevant text. 
+
+Please IGNORE all non-tabular, irrelevant data and focus ONLY on the actual transaction tables (Date, Description/Reference, Withdrawals, Deposits, Balance).
+
+Extract the transaction data and return strictly a raw JSON array of objects with the exact following keys:
+- "date": Date of transaction in YYYY-MM-DD format
+- "description": Description or narration or reference of the transaction
+- "category": Categorize the transaction into a single concise word or short phrase (e.g. "Rent", "Groceries", "Food", "Salary", "Transfer", "Utility", "Other") based on the description
+- "amount": The numeric amount of the transaction as a positive float only
+- "type": "income" (for credits/deposits) or "expense" (for debits/withdrawals)
+
+Do not include any markdown wrap like \`\`\`json, just output the raw JSON array.
+      `;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [inlinePdf, prompt]
+      });
+
+      let jsonText = response.text || '';
+      jsonText = jsonText.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+
+      let extractedTransactions;
+      try {
+        extractedTransactions = JSON.parse(jsonText);
+      } catch (e) {
+        throw new Error('Failed to parse AI response as JSON. AI Response: ' + jsonText.substring(0, 100) + '...');
+      }
+
+      const validRows = extractedTransactions.filter(r => r.amount > 0);
+      if (validRows.length === 0) return res.status(400).json({ error: 'No valid transactions found in PDF.' });
+
+      let db = await getDbData();
+      const uploadId = Date.now().toString();
+      if (!db.uploads) db.uploads = [];
+      db.uploads.push({
+        id: uploadId,
+        filename: req.file.originalname,
+        uploadedAt: new Date().toISOString(),
+        rowCount: validRows.length
+      });
+
+      const existingIds = new Set((db.transactions || []).map(t => t.uploadId));
+      db.transactions = [
+        ...(db.transactions || []).filter(t => t.uploadId !== uploadId),
+        ...validRows.map((r, i) => ({ id: Date.now() + i, uploadId, ...r }))
+      ];
+
+      db = recalculateDb(db);
+      await writeDbData(db);
+
+      return res.json({ success: true, imported: validRows.length, skipped: 0, uploadId });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to process PDF: ' + err.message });
+    }
+  }
+
+  // [CSV Processing]
 
   const rawRows = [];
   const bufferStream = new Readable();
@@ -445,7 +527,47 @@ app.get('/api/dashboard/expenses', async (req, res) => { const db = getFilteredD
 app.get('/api/dashboard/runway', async (req, res) => { const db = getFilteredDb(await getDbData(), req.query.filter); res.json(db.runway || []); });
 app.get('/api/dashboard/revenue-expense', async (req, res) => { const db = getFilteredDb(await getDbData(), req.query.filter); res.json(db.revenueExpense || []); });
 app.get('/api/dashboard/alerts', async (req, res) => { const db = getFilteredDb(await getDbData(), req.query.filter); res.json(db.alerts || []); });
-app.get('/api/ai/recommendations', async (req, res) => { const db = await getDbData(); res.json(db.recommendations || []); });
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { message, context } = req.body;
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY is missing in backend (.env).' });
+    }
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    // Safely summarize context to ensure we fit in context window and omit heavy transaction lists
+    const summaryContext = {
+      stats: context.stats,
+      revenueExpense: context.revenueExpense,
+      runway: context.runway,
+      runwayMonths: context.runwayMonths,
+      alerts: context.alerts,
+      expenses: context.expenses
+    };
+
+    const prompt = `
+You are FinInsight AI, a helpful, expert financial advisor embedded directly in a user's dashboard.
+The user is asking a question about their business finances.
+
+Here is the current context (their financial dashboard data):
+${JSON.stringify(summaryContext)}
+
+User Question: ${message}
+
+Provide a concise, helpful, and insightful response. Be warm and conversational, focusing strictly on the user's data metrics if relevant. Keep it under 150 words. You may use markdown formatting for readability.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt
+    });
+
+    res.json({ reply: response.text });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate AI response: ' + err.message });
+  }
+});
 app.get('/api/uploads', async (req, res) => { const db = await getDbData(); res.json(db.uploads || []); });
 
 app.get('/api/dashboard/health', async (req, res) => {

@@ -54,9 +54,16 @@ export async function fetchAlerts() {
   return res.json();
 }
 
-export async function fetchAIRecommendations() {
-  const res = await fetch(`${API_BASE_URL}/ai/recommendations`);
-  if (!res.ok) throw new Error('Failed to fetch AI recommendations');
+export async function sendChatMessage(message: string, context: any) {
+  const res = await fetch(`${API_BASE_URL}/ai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, context }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to fetch AI response');
+  }
   return res.json();
 }
 

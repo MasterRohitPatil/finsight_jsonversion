@@ -37,10 +37,8 @@ const Landing = () => {
       <nav className="fixed top-0 inset-x-0 z-50 h-16 border-b border-border/50 glass-card">
         <div className="max-w-6xl mx-auto h-full flex items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold text-foreground tracking-tight">FinSight</span>
+            <img src="/logo.png" alt="HisabHero Logo" className="w-8 h-8 object-contain" onError={(e) => { e.currentTarget.style.display='none' }} />
+            <span className="text-lg font-bold text-foreground tracking-tight">HisabHero</span>
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -67,7 +65,7 @@ const Landing = () => {
             <span className="text-primary">crystal clear.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            FinSight gives small and medium businesses a powerful dashboard to track cash flow, detect anomalies, and get AI-driven recommendations — all in one place.
+            HisabHero gives small and medium businesses a powerful dashboard to track cash flow, detect anomalies, and get AI-driven recommendations — all in one place.
           </p>
           <div className="flex items-center justify-center gap-4 pt-4">
             <Button size="lg" asChild className="gap-2">
@@ -125,7 +123,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-border/30 py-8 px-6">
         <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-muted-foreground">
-          <span>© 2026 FinSight. Built for Indian SMEs.</span>
+          <span>© 2026 HisabHero. Built for Indian SMEs.</span>
           <div className="flex items-center gap-2">
             <TrendingUp className="w-3 h-3 text-primary" />
             <span>Hackathon Project</span>

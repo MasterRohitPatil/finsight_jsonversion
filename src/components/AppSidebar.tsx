@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, PieChart, Lightbulb, HelpCircle } from "lucide-react";
+import { LayoutDashboard, TrendingUp, PieChart, HelpCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
@@ -16,7 +16,7 @@ const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Cash Flow", url: "/cash-flow", icon: TrendingUp },
   { title: "Expense Analysis", url: "/expenses", icon: PieChart },
-  { title: "AI Recommendations", url: "/ai", icon: Lightbulb },
+
   { title: "Help", url: "/help", icon: HelpCircle },
 ];
 
@@ -29,11 +29,9 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
       <SidebarContent className="pt-6">
         <div className="px-4 mb-8 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-primary-foreground" />
-          </div>
+          <img src="/logo.png" alt="HisabHero Logo" className="w-8 h-8 object-contain" onError={(e) => { e.currentTarget.style.display='none' }} />
           {!collapsed && (
-            <span className="text-lg font-bold text-foreground tracking-tight">FinSight</span>
+            <span className="text-lg font-bold text-foreground tracking-tight">HisabHero</span>
           )}
         </div>
 

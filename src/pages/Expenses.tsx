@@ -52,7 +52,12 @@ export default function Expenses() {
                   <Pie data={categories} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
                     {categories.map((c: any, i: number) => <Cell key={i} fill={c.color} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: "hsl(220 18% 13%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 8, color: "hsl(210 20% 92%)" }} formatter={(v: number) => `₹${v.toLocaleString("en-IN")}`} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(220 18% 13%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 8 }}
+                    itemStyle={{ color: "hsl(210 20% 92%)" }}
+                    labelStyle={{ color: "hsl(210 20% 92%)" }}
+                    formatter={(v: number) => `₹${v.toLocaleString("en-IN")}`}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2.5 flex-1">
@@ -77,7 +82,11 @@ export default function Expenses() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" />
                   <XAxis dataKey="month" stroke="hsl(215 15% 55%)" fontSize={12} />
                   <YAxis stroke="hsl(215 15% 55%)" fontSize={12} tickFormatter={(v) => `₹${v / 1000}k`} />
-                  <Tooltip contentStyle={{ background: "hsl(220 18% 13%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 8, color: "hsl(210 20% 92%)" }} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(220 18% 13%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 8 }}
+                    itemStyle={{ color: "hsl(210 20% 92%)" }}
+                    labelStyle={{ color: "hsl(210 20% 92%)" }}
+                  />
                   <Bar dataKey="payroll" stackId="a" fill="hsl(160 84% 39%)" name="Payroll" />
                   <Bar dataKey="rent" stackId="a" fill="hsl(200 80% 50%)" name="Rent" />
                   <Bar dataKey="marketing" stackId="a" fill="hsl(38 92% 50%)" name="Marketing" />
