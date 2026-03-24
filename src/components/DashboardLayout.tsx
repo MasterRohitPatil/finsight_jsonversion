@@ -16,10 +16,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </SidebarTrigger>
               <h1 className="text-sm font-medium text-muted-foreground">Financial Dashboard</h1>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
-              <Upload className="w-4 h-4" />
-              Upload CSV
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
+                <Upload className="w-4 h-4" />
+                Upload CSV
+              </button>
+            </div>
           </header>
           <main className="flex-1 p-6 overflow-auto">
             {children}
