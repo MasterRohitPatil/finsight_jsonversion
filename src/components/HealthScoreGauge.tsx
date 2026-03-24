@@ -1,8 +1,19 @@
-const score = 82;
-const circumference = 2 * Math.PI * 70;
-const offset = circumference - (score / 100) * circumference;
+import { useQuery } from "@tanstack/react-query";
+import { fetchHealth } from "@/lib/api";
 
 export function HealthScoreGauge() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['health'],
+    queryFn: fetchHealth,
+  });
+
+  if (isLoading) return <div className="glass-card rounded-2xl p-8 flex flex-col items-center justify-center h-[340px] animate-pulse">Loading...</div>;
+  if (error || !data) return <div className="glass-card rounded-2xl p-8 text-danger">Failed to load health score.</div>;
+
+  const score = data.score || 0;
+  const circumference = 2 * Math.PI * 70;
+  const offset = circumference - (score / 100) * circumference;
+
   return (
     <div className="glass-card rounded-2xl p-8 flex flex-col items-center justify-center">
       <h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
@@ -32,7 +43,9 @@ export function HealthScoreGauge() {
           <span className="text-xs text-muted-foreground mt-1">out of 100</span>
         </div>
       </div>
-      <p className="text-sm text-success mt-4 font-medium">● Healthy</p>
+      <p className={`text-sm mt-4 font-medium ${score >= 70 ? 'text-success' : score >= 40 ? 'text-warning' : 'text-danger'}`}>
+        ● {score >= 70 ? 'Healthy' : score >= 40 ? 'Needs Attention' : 'Critical'}
+      </p>
     </div>
   );
 }

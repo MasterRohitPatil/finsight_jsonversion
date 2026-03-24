@@ -10,6 +10,7 @@ import Expenses from "./pages/Expenses.tsx";
 import AIRecommendations from "./pages/AIRecommendations.tsx";
 import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 
 const queryClient = new QueryClient();
 
@@ -21,11 +22,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/dashboard" element={<Index />} />
-          <Route path="/cash-flow" element={<CashFlow />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/ai" element={<AIRecommendations />} />
           <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Index />} />
+            <Route path="/cash-flow" element={<CashFlow />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/ai" element={<AIRecommendations />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

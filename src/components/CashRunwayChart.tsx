@@ -1,19 +1,18 @@
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
 } from "recharts";
-
-const data = [
-  { month: "Oct", runway: 14 },
-  { month: "Nov", runway: 13.2 },
-  { month: "Dec", runway: 11.5 },
-  { month: "Jan", runway: 12.8 },
-  { month: "Feb", runway: 11.0 },
-  { month: "Mar", runway: 9.6 },
-  { month: "Apr*", runway: 8.2 },
-  { month: "May*", runway: 6.8 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchRunway } from "@/lib/api";
 
 export function CashRunwayChart() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['runway'],
+    queryFn: fetchRunway,
+  });
+
+  if (isLoading) return <div className="glass-card rounded-2xl p-6 h-[400px] animate-pulse">Loading runway...</div>;
+  if (error || !data) return <div className="glass-card rounded-2xl p-6 text-danger">Failed to load runway data.</div>;
+
   return (
     <div className="glass-card rounded-2xl p-6">
       <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">

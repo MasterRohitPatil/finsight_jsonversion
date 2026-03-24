@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ArrowUpDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTransactions } from "@/lib/api";
 
 type Transaction = {
   id: number;
@@ -10,26 +12,13 @@ type Transaction = {
   type: "income" | "expense";
 };
 
-const transactions: Transaction[] = [
-  { id: 1, date: "2025-03-22", description: "Office Rent - March", category: "Rent", amount: 85000, type: "expense" },
-  { id: 2, date: "2025-03-20", description: "Bulk Inventory Purchase", category: "Inventory", amount: 245000, type: "expense" },
-  { id: 3, date: "2025-03-18", description: "Employee Payroll", category: "Payroll", amount: 320000, type: "expense" },
-  { id: 4, date: "2025-03-17", description: "Product Sales - B2B", category: "Sales", amount: 580000, type: "income" },
-  { id: 5, date: "2025-03-15", description: "Google Ads Campaign", category: "Marketing", amount: 72000, type: "expense" },
-  { id: 6, date: "2025-03-14", description: "Retail Sales - Store", category: "Sales", amount: 195000, type: "income" },
-  { id: 7, date: "2025-03-12", description: "SaaS Subscriptions", category: "Software", amount: 18500, type: "expense" },
-  { id: 8, date: "2025-03-10", description: "Consulting Revenue", category: "Sales", amount: 120000, type: "income" },
-];
-
 export function TransactionsTable() {
   const [sortKey, setSortKey] = useState<keyof Transaction>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  const sorted = [...transactions].sort((a, b) => {
-    const av = a[sortKey];
-    const bv = b[sortKey];
-    if (typeof av === "number" && typeof bv === "number") return sortDir === "asc" ? av - bv : bv - av;
-    return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+  const { data: transactions, isLoading, error } = useQuery<Transaction[]>({
+    queryKey: ['transactions'],
+    queryFn: fetchTransactions,
   });
 
   const toggle = (key: keyof Transaction) => {
@@ -43,6 +32,28 @@ export function TransactionsTable() {
     { key: "category", label: "Category" },
     { key: "amount", label: "Amount" },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-6">Recent Transactions</h3>
+        <div className="space-y-4 animate-pulse">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-10 bg-muted/20 rounded" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !transactions) {
+    return <div className="text-danger text-sm">Failed to load transactions.</div>;
+  }
+
+  const sorted = [...transactions].sort((a, b) => {
+    const av = a[sortKey];
+    const bv = b[sortKey];
+    if (typeof av === "number" && typeof bv === "number") return sortDir === "asc" ? av - bv : bv - av;
+    return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+  });
 
   return (
     <div className="glass-card rounded-2xl p-6">

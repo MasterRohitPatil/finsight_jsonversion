@@ -1,19 +1,20 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-
-const data = [
-  { month: "Oct", revenue: 380000, expenses: 290000 },
-  { month: "Nov", revenue: 420000, expenses: 310000 },
-  { month: "Dec", revenue: 390000, expenses: 340000 },
-  { month: "Jan", revenue: 450000, expenses: 300000 },
-  { month: "Feb", revenue: 410000, expenses: 295000 },
-  { month: "Mar", revenue: 458000, expenses: 332000 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchRevenueExpense } from "@/lib/api";
 
 const fmt = (v: number) => `₹${(v / 1000).toFixed(0)}K`;
 
 export function RevenueExpenseChart() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['revenue-expense'],
+    queryFn: fetchRevenueExpense,
+  });
+
+  if (isLoading) return <div className="glass-card rounded-2xl p-6 h-[400px] animate-pulse">Loading chart...</div>;
+  if (error || !data) return <div className="glass-card rounded-2xl p-6 text-danger">Failed to load chart data.</div>;
+
   return (
     <div className="glass-card rounded-2xl p-6">
       <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-6">
